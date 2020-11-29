@@ -1,0 +1,9 @@
+{
+  "name": "@wonderlandpark/ms",
+  "version": "1.0.0",
+  "description": "밀리초 변환 유틸리티",
+  "main": "index.js",
+  "keywords": [],
+  "author": "wonderlandpark<wonderlandpark@callisto.team>",
+  "license": "MIT"
+}

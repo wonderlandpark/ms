@@ -1,0 +1,169 @@
+/**
+ * Helpers.
+ */
+
+const s = 1000
+const m = s * 60
+const h = m * 60
+const d = h * 24
+const w = d * 7
+const y = d * 365.25
+
+/**
+ * Parse or format the given `val`.
+ *
+ * Options:
+ *
+ *  - `long` verbose formatting [false]
+ *
+ * @param {String|Number} val
+ * @param {Object} [options]
+ * @throws {Error} throw an error if val is not a non-empty string or a number
+ * @return {String|Number}
+ * @api public
+ */
+
+module.exports = function (val, options) {
+  options = options || {}
+  const type = typeof val
+  if (type === 'string' && val.length > 0) {
+    return parse(val)
+  } else if (type === 'number' && isFinite(val)) {
+    return options.long ? fmtLong(val) : fmtShort(val)
+  }
+  throw new Error(
+    'val is not a non-empty string or a valid number. val=' +
+      JSON.stringify(val)
+  )
+}
+
+/**
+ * Parse the given `str` and return milliseconds.
+ *
+ * @param {String} str
+ * @return {Number}
+ * @api private
+ */
+
+function parse (str) {
+  str = String(str)
+  if (str.length > 100) {
+    return
+  }
+  const match = /^(-?(?:\d+)?\.?\d+) *(밀리초?|milliseconds?|msecs?|ms|초?|seconds?|secs?|s|분?|minutes?|mins?|m|시간?|hours?|hrs?|h|일?|days?|d|주?|weeks?|w|년?|years?|yrs?|y)?$/i.exec(
+    str
+  )
+  if (!match) {
+    return
+  }
+  const n = parseFloat(match[1])
+  const type = (match[2] || 'ms').toLowerCase()
+  switch (type) {
+    case '년':
+    case 'years':
+    case 'year':
+    case 'yrs':
+    case 'yr':
+    case 'y':
+      return n * y
+    case '주':
+    case 'weeks':
+    case 'week':
+    case 'w':
+      return n * w
+    case '일':
+    case 'days':
+    case 'day':
+    case 'd':
+      return n * d
+    case '시간':
+    case 'hours':
+    case 'hour':
+    case 'hrs':
+    case 'hr':
+    case 'h':
+      return n * h
+    case '분':
+    case 'minutes':
+    case 'minute':
+    case 'mins':
+    case 'min':
+    case 'm':
+      return n * m
+    case '초':
+    case 'seconds':
+    case 'second':
+    case 'secs':
+    case 'sec':
+    case 's':
+      return n * s
+    case '밀리초':
+    case 'milliseconds':
+    case 'millisecond':
+    case 'msecs':
+    case 'msec':
+    case 'ms':
+      return n
+    default:
+      return undefined
+  }
+}
+
+/**
+ * Short format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function fmtShort (ms) {
+  const msAbs = Math.abs(ms)
+  if (msAbs >= d) {
+    return Math.round(ms / d) + 'd'
+  }
+  if (msAbs >= h) {
+    return Math.round(ms / h) + 'h'
+  }
+  if (msAbs >= m) {
+    return Math.round(ms / m) + 'm'
+  }
+  if (msAbs >= s) {
+    return Math.round(ms / s) + 's'
+  }
+  return ms + 'ms'
+}
+
+/**
+ * Long format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function fmtLong (ms) {
+  const msAbs = Math.abs(ms)
+  if (msAbs >= d) {
+    return plural(ms, msAbs, d, '일')
+  }
+  if (msAbs >= h) {
+    return plural(ms, msAbs, h, '시간')
+  }
+  if (msAbs >= m) {
+    return plural(ms, msAbs, m, '분')
+  }
+  if (msAbs >= s) {
+    return plural(ms, msAbs, s, '초')
+  }
+  return ms + '밀리초'
+}
+
+/**
+ * Pluralization helper.
+ */
+
+function plural (ms, msAbs, n, name) {
+  const isPlural = msAbs >= n * 1.5
+  return Math.round(ms / n) + name + (isPlural ? '' : '')
+}
